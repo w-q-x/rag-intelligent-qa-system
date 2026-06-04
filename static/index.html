@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG 鏅鸿兘闂瓟绯荤粺</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Login Overlay -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-card">
+            <h2>RAG 鏅鸿兘闂瓟绯荤粺</h2>
+            <p class="login-subtitle">璇风櫥褰曟垨娉ㄥ唽浠ョ户缁?/p>
+            <div class="login-tabs">
+                <button class="login-tab active" data-tab="login">鐧诲綍</button>
+                <button class="login-tab" data-tab="register">娉ㄥ唽</button>
+            </div>
+            <div class="login-form" id="loginForm">
+                <div class="form-group">
+                    <input type="text" id="loginUsername" placeholder="鐢ㄦ埛鍚? autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <input type="password" id="loginPassword" placeholder="瀵嗙爜" autocomplete="current-password">
+                </div>
+                <button class="submit-btn" id="loginSubmitBtn">鐧诲綍</button>
+                <p class="login-error" id="loginError"></p>
+                <button class="skip-login-btn" id="skipLoginBtn">璺宠繃鐧诲綍锛堝尶鍚嶄娇鐢級</button>
+            </div>
+            <div class="login-form" id="registerForm" style="display:none">
+                <div class="form-group">
+                    <input type="text" id="registerUsername" placeholder="鐢ㄦ埛鍚? autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <input type="password" id="registerPassword" placeholder="瀵嗙爜" autocomplete="new-password">
+                </div>
+                <button class="submit-btn" id="registerSubmitBtn">娉ㄥ唽</button>
+                <p class="login-error" id="registerError"></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <!-- 宸︿晶杈规爮 -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <button class="new-chat-btn" id="newChatBtn">
+                    <i class="fas fa-plus"></i>
+                    <span>鍒涘缓鏂板璇?/span>
+                </button>
+                <div class="search-modes" id="searchModes">
+                    <div class="mode-item" data-mode="agent">
+                        <i class="fas fa-robot"></i>
+                        <span>鏅鸿兘闂瓟</span>
+                    </div>
+                    <div class="mode-item" data-mode="summary-post">
+                        <i class="fas fa-file-text"></i>
+                        <span>蹇€熸煡璇?/span>
+                    </div>
+                </div>
+            </div>
+            <hr class="sidebar-divider">
+            <div class="sidebar-section">
+                <div class="section-header">
+                    <i class="fas fa-database"></i>
+                    <span>鏂囨。绠＄悊</span>
+                </div>
+                <div class="section-items">
+                    <button class="section-item" id="listDocsBtn">
+                        <i class="fas fa-list"></i>
+                        <span>鍒楀嚭鎵€鏈夋枃妗?/span>
+                    </button>
+                    <button class="section-item" id="uploadDocBtn">
+                        <i class="fas fa-upload"></i>
+                        <span>涓婁紶鏂囨。</span>
+                    </button>
+                    <button class="section-item" id="addDocsBtn">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>娣诲姞闂瓟瀵圭瑪璁?/span>
+                    </button>
+                    <button class="section-item" id="clearDocsBtn">
+                        <i class="fas fa-trash-alt"></i>
+                        <span>娓呯┖鎵€鏈夋枃妗?/span>
+                    </button>
+                    <button class="section-item" id="countDocsBtn">
+                        <i class="fas fa-counter"></i>
+                        <span>鑾峰彇鏂囨。鏁伴噺</span>
+                    </button>
+                </div>
+            </div>
+            <hr class="sidebar-divider">
+            <div class="sidebar-section">
+                <div class="section-header">
+                    <i class="fas fa-comments"></i>
+                    <span>浼氳瘽绠＄悊</span>
+                </div>
+                <div class="section-items">
+                    <button class="section-item" id="listConvsBtn">
+                        <i class="fas fa-list-ul"></i>
+                        <span>鍒楀嚭鎵€鏈変細璇?/span>
+                    </button>
+                    <button class="section-item" id="updateTitleBtn">
+                        <i class="fas fa-pencil-alt"></i>
+                        <span>鏇存柊浼氳瘽鏍囬</span>
+                    </button>
+                </div>
+            </div>
+            <hr class="sidebar-divider">
+            <div class="sidebar-section">
+                <div class="section-header">
+                    <i class="fas fa-history"></i>
+                    <span>鍘嗗彶瀵硅瘽</span>
+                </div>
+                <div class="conversations-list" id="conversationsList">
+                </div>
+            </div>
+        </div>
+
+        <!-- 鍙充晶涓诲尯鍩?-->
+        <div class="main-content">
+            <div class="chat-header" id="chatHeader">
+                <h2>鏅鸿兘闂瓟绯荤粺</h2>
+                <div class="header-actions">
+                    <span class="current-user" id="currentUserLabel" style="display:none"></span>
+                    <button class="action-btn" id="logoutBtn" style="display:none">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>閫€鍑?/span>
+                    </button>
+                    <button class="action-btn" id="deleteConvBtn" style="display:none">
+                        <i class="fas fa-trash"></i>
+                        <span>鍒犻櫎浼氳瘽</span>
+                    </button>
+                    <button class="clear-history" id="clearHistoryBtn">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="welcome-screen" id="welcomeScreen">
+                <div class="welcome-content">
+                    <i class="fas fa-comments"></i>
+                    <h1>鏈変粈涔堟垜鑳藉府浣犵殑鍚楋紵</h1>
+                    <p>鎮ㄥ彲涓婁紶闇€瑕佹垜瀛︿範鐨勬枃妗ｏ紝鎴戝彲鏍规嵁鎮ㄦ墍涓婁紶鐨勬枃妗ｄ负鎮ㄦ帓蹇цВ闅?/p>
+                </div>
+            </div>
+
+            <div class="modal" id="docsModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>鏂囨。鍒楄〃</h3>
+                        <button class="modal-close" id="docsModalClose">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body" id="docsModalBody">
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal" id="uploadDocModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>涓婁紶鏂囨。</h3>
+                        <button class="modal-close" id="uploadDocModalClose">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="upload-area" id="uploadArea">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>鐐瑰嚮鎴栨嫋鎷芥枃浠跺埌姝ゅ涓婁紶</p>
+                            <p class="upload-hint">鏀寔 PDF銆乀XT銆丏OCX銆丮D 绛夋牸寮?/p>
+                            <p class="upload-hint">鏈€澶ф枃浠跺ぇ灏忥細50MB</p>
+                            <input type="file" id="fileInput" accept=".pdf,.txt,.docx,.doc,.md,.html" style="display:none">
+                        </div>
+                        <div class="upload-progress" id="uploadProgress" style="display:none">
+                            <div class="progress-bar"></div>
+                            <span class="progress-text">涓婁紶涓?..</span>
+                        </div>
+                        <button class="submit-btn" id="uploadFileBtn" style="display:none">涓婁紶鏂囨。</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal" id="addDocsModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>娣诲姞闂瓟瀵?/h3>
+                        <button class="modal-close" id="addDocsModalClose">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>闂锛?/label>
+                            <input type="text" id="docQuestion" placeholder="杈撳叆闂">
+                        </div>
+                        <div class="form-group">
+                            <label>绛旀锛?/label>
+                            <textarea id="docAnswer" placeholder="杈撳叆绛旀" rows="4"></textarea>
+                        </div>
+                        <button class="submit-btn" id="submitDocBtn">娣诲姞闂瓟瀵?/button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal" id="updateTitleModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>鏇存柊浼氳瘽鏍囬</h3>
+                        <button class="modal-close" id="updateTitleModalClose">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>鏂版爣棰橈細</label>
+                            <input type="text" id="newTitle" placeholder="杈撳叆鏂版爣棰?>
+                        </div>
+                        <button class="submit-btn" id="submitTitleBtn">鏇存柊鏍囬</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+            </div>
+
+            <div class="input-area" id="inputArea">
+                <textarea id="messageInput" placeholder="杈撳叆鎮ㄧ殑闂..." rows="1"></textarea>
+                <button class="send-btn" id="sendBtn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
