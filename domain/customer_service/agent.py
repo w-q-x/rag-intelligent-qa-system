@@ -112,6 +112,7 @@ Answer requirements:
 2. If the context does not contain enough relevant information, say that no reliable answer was found in the knowledge base.
 3. Be concise, accurate, and polite.
 4. Do not invent facts outside the retrieved context.
+5. **Always respond in Chinese (简体中文).**
 """
 
         raw_reply = chat_service.chat_completion([{"role": "user", "content": final_prompt}])
