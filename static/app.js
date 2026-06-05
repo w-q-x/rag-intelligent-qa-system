@@ -8,7 +8,6 @@ class ChatApp {
         this.authToken = localStorage.getItem('rag_token') || null;
         this.currentUsername = localStorage.getItem('rag_username') || null;
 
-
         this.initElements();
         this.bindEvents();
         this.initAuth();
@@ -91,7 +90,7 @@ class ChatApp {
         });
 
         this.clearHistoryBtn.addEventListener('click', () => {
-            if (confirm('纭畾瑕佹竻绌烘墍鏈夊巻鍙插璇濆悧锛?)) {
+            if (confirm('确定要清空所有历史对话吗?')) {
                 this.clearAllConversations();
             }
         });
@@ -106,10 +105,10 @@ class ChatApp {
         this.listDocsBtn.addEventListener('click', () => this.listDocuments());
         this.uploadDocBtn.addEventListener('click', () => {
             this.selectedFile = null;
-        this.lastQuestion = null;
-        this.authToken = localStorage.getItem('rag_token') || null;
-        this.currentUsername = localStorage.getItem('rag_username') || null;
-        this.initAuth();
+            this.lastQuestion = null;
+            this.authToken = localStorage.getItem('rag_token') || null;
+            this.currentUsername = localStorage.getItem('rag_username') || null;
+            this.initAuth();
             this.uploadProgress.style.display = 'none';
             this.uploadFileBtn.style.display = 'none';
             this.uploadArea.style.display = 'flex';
@@ -121,7 +120,7 @@ class ChatApp {
             this.addDocsModal.classList.add('show');
         });
         this.clearDocsBtn.addEventListener('click', () => {
-            if (confirm('纭畾瑕佹竻绌烘墍鏈夋枃妗ｅ悧锛熸鎿嶄綔涓嶅彲鎭㈠锛?)) {
+            if (confirm('确定要清空所有文档吗?')) {
                 this.clearDocuments();
             }
         });
@@ -129,11 +128,11 @@ class ChatApp {
 
         this.listConvsBtn.addEventListener('click', () => {
             this.loadConversations();
-            alert('浼氳瘽鍒楄〃宸插埛鏂?);
+            alert('已加载对话列表');
         });
         this.updateTitleBtn.addEventListener('click', () => {
             if (!this.currentConversationId) {
-                alert('璇峰厛閫夋嫨涓€涓細璇?);
+                alert('请先选择一个对话');
                 return;
             }
             this.newTitle.value = '';
@@ -141,7 +140,7 @@ class ChatApp {
         });
         this.deleteConvBtn.addEventListener('click', () => {
             if (!this.currentConversationId) return;
-            if (confirm('纭畾瑕佸垹闄ゅ綋鍓嶄細璇濆悧锛?)) {
+            if (confirm('确定要删除这个对话吗?')) {
                 this.deleteConversation(this.currentConversationId);
             }
         });
@@ -154,7 +153,7 @@ class ChatApp {
         this.submitTitleBtn.addEventListener('click', () => this.updateConversationTitle());
         this.uploadFileBtn.addEventListener('click', () => this.uploadFile());
 
-        // 鏂囦欢涓婁紶浜嬩欢
+        // 点击上传区域
         this.uploadArea.addEventListener('click', () => {
             this.fileInput.click();
         });
@@ -162,12 +161,12 @@ class ChatApp {
             const file = e.target.files[0];
             if (file) {
                 this.selectedFile = file;
-                this.uploadArea.innerHTML = `<p style="color:#10b981;">宸查€夋嫨鏂囦欢: ${file.name}</p>`;
+                this.uploadArea.innerHTML = `<p style="color:#10b981;">已选择文件: ${file.name}</p>`;
                 this.uploadFileBtn.style.display = 'block';
             }
         });
 
-        // 鎷栨嫿涓婁紶
+        // 拖拽上传
         this.uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
             this.uploadArea.classList.add('drag-over');
@@ -181,7 +180,7 @@ class ChatApp {
             const file = e.dataTransfer.files[0];
             if (file) {
                 this.selectedFile = file;
-                this.uploadArea.innerHTML = `<p style="color:#10b981;">宸查€夋嫨鏂囦欢: ${file.name}</p>`;
+                this.uploadArea.innerHTML = `<p style="color:#10b981;">已选择文件: ${file.name}</p>`;
                 this.uploadFileBtn.style.display = 'block';
             }
         });
@@ -194,7 +193,7 @@ class ChatApp {
             this.conversations = data.conversations || [];
             this.renderConversations();
         } catch (error) {
-            console.error('鍔犺浇浼氳瘽澶辫触:', error);
+            console.error('加载对话失败:', error);
         }
     }
 
@@ -205,7 +204,7 @@ class ChatApp {
         if (this.conversations.length === 0) {
             const emptyMsg = document.createElement('div');
             emptyMsg.className = 'empty-conversations';
-            emptyMsg.textContent = '鏆傛棤鍘嗗彶瀵硅瘽';
+            emptyMsg.textContent = '暂无对话';
             emptyMsg.style.padding = '20px';
             emptyMsg.style.textAlign = 'center';
             emptyMsg.style.color = '#999';
@@ -221,7 +220,7 @@ class ChatApp {
 
             const titleDiv = document.createElement('div');
             titleDiv.className = 'conversation-title';
-            titleDiv.textContent = conv.title || '鏂颁細璇?;
+            titleDiv.textContent = conv.title || '新对话';
 
             const idDiv = document.createElement('div');
             idDiv.className = 'conversation-id';
@@ -251,10 +250,10 @@ class ChatApp {
         this.chatMessages.innerHTML = '';
 
         const modeNames = {
-            'agent': '鏅鸿兘闂瓟',
-            'summary-post': '蹇€熸煡璇?
+            'agent': '智能助手',
+            'summary-post': '文档问答'
         };
-        this.chatHeader.querySelector('h2').textContent = modeNames[mode] || '鏅鸿兘瀹㈡湇';
+        this.chatHeader.querySelector('h2').textContent = modeNames[mode] || '智能对话';
 
         setTimeout(() => this.messageInput.focus(), 100);
     }
@@ -270,7 +269,7 @@ class ChatApp {
             this.inputArea.style.display = 'flex';
             this.deleteConvBtn.style.display = 'flex';
 
-            this.chatHeader.querySelector('h2').textContent = data.title || '鏅鸿兘瀹㈡湇';
+            this.chatHeader.querySelector('h2').textContent = data.title || '智能对话';
 
             this.chatMessages.innerHTML = '';
             data.messages.forEach(msg => {
@@ -287,7 +286,7 @@ class ChatApp {
             this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
 
         } catch (error) {
-            console.error('鍔犺浇浼氳瘽澶辫触:', error);
+            console.error('加载对话失败:', error);
         }
     }
 
@@ -301,7 +300,7 @@ class ChatApp {
         this.renderMessage('user', question);
         this.messageInput.value = '';
 
-        // 娣诲姞"妯″瀷鎬濊€冧腑"鍔犺浇鎻愮ず
+        // 显示"模型思考中"的加载消息
         const loadingMessage = this.renderLoadingMessage();
         this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
 
@@ -310,7 +309,7 @@ class ChatApp {
             let data;
 
             if (this.currentMode === 'summary-post') {
-                // 璺緞浜岋細杞婚噺绾?- 鎼滅储骞剁敓鎴愭€荤粨
+                // 文档问答模式 - 使用总结搜索接口
                 const endpoint = '/rag/search/summary';
                 response = await fetch(endpoint, {
                     method: 'POST',
@@ -329,7 +328,7 @@ class ChatApp {
                     reply = data.results.map(r => `${r.question}\n${r.answer}`).join('\n\n');
                     sources = data.results.map(r => r.source).filter(Boolean);
                 } else {
-                    reply = '鏈壘鍒扮浉鍏崇瓟妗?;
+                    reply = '未找到相关内容';
                 }
 
                 this.renderMessage('assistant', reply, sources, null, null, null, null, loadingMessage);
@@ -362,7 +361,7 @@ class ChatApp {
                 }
 
             } else {
-                // 璺緞涓€锛氬畬鏁存祦绋?- Agent (SSE streaming)
+                // 使用Agent模式 - Agent (SSE streaming)
                 this.lastQuestion = question;
                 const response = await fetch('/api/v1/chat/stream', {
                     method: 'POST',
@@ -437,7 +436,7 @@ class ChatApp {
             await this.loadConversations();
 
         } catch (error) {
-            this.renderMessage('assistant', `璇锋眰澶辫触: ${error.message}`, null, null, null, null, null, loadingMessage);
+            this.renderMessage('assistant', `发生错误: ${error.message}`, null, null, null, null, null, loadingMessage);
         } finally {
             this.sendBtn.disabled = false;
             this.messageInput.disabled = false;
@@ -453,7 +452,7 @@ class ChatApp {
 
         const contentDiv = document.createElement('div');
         contentDiv.className = 'message-content';
-        contentDiv.innerHTML = '<span class="loading-spinner"></span>妯″瀷鎬濊€冧腑...';
+        contentDiv.innerHTML = '<span class="loading-spinner"></span>模型思考中...';
 
         messageDiv.appendChild(contentDiv);
         this.chatMessages.appendChild(messageDiv);
@@ -461,7 +460,7 @@ class ChatApp {
     }
 
     renderMessage(role, content, sources = null, thinking = null, action = null, rewrittenQuestion = null, finalPrompt = null, loadingMessage = null) {
-        // 濡傛灉鏈夊姞杞芥秷鎭紝鍏堢Щ闄ゅ畠
+        // 如果有加载消息,先移除它
         if (loadingMessage && loadingMessage.parentNode) {
             loadingMessage.parentNode.removeChild(loadingMessage);
         }
@@ -476,37 +475,37 @@ class ChatApp {
         if (thinking) {
             const thinkingDiv = document.createElement('div');
             thinkingDiv.className = 'message-thinking';
-            thinkingDiv.textContent = `鎬濊€? ${thinking}`;
+            thinkingDiv.textContent = `思考: ${thinking}`;
             contentDiv.appendChild(thinkingDiv);
         }
 
         if (action) {
             const actionDiv = document.createElement('div');
             actionDiv.className = 'message-action';
-            actionDiv.textContent = `鍔ㄤ綔: ${action}`;
+            actionDiv.textContent = `行动: ${action}`;
             contentDiv.appendChild(actionDiv);
         }
 
         if (rewrittenQuestion) {
             const rewriteDiv = document.createElement('div');
             rewriteDiv.className = 'message-rewrite';
-            rewriteDiv.innerHTML = `<strong>馃攧 閲嶅啓鍚庣殑闂锛?/strong><br><pre style="margin: 5px 0 0 0; white-space: pre-wrap; word-break: break-all;">${this.escapeHtml(rewrittenQuestion)}</pre>`;
+            rewriteDiv.innerHTML = `<strong>rewrite-question</strong><br><pre style="margin: 5px 0 0 0; white-space: pre-wrap; word-break: break-all;">${this.escapeHtml(rewrittenQuestion)}</pre>`;
             contentDiv.appendChild(rewriteDiv);
         }
 
         if (finalPrompt) {
             const promptDiv = document.createElement('div');
             promptDiv.className = 'message-prompt';
-            promptDiv.innerHTML = `<strong>馃摑 LLM Prompt 涓婁笅鏂囷細</strong><br><pre style="margin: 5px 0 0 0; white-space: pre-wrap; word-break: break-all; max-height: 300px; overflow-y: auto;">${this.escapeHtml(finalPrompt)}</pre>`;
+            promptDiv.innerHTML = `<strong>Prompt</strong><br><pre style="margin: 5px 0 0 0; white-space: pre-wrap; word-break: break-all; max-height: 300px; overflow-y: auto;">${this.escapeHtml(finalPrompt)}</pre>`;
             contentDiv.appendChild(promptDiv);
         }
 
-        // 娣诲姞鏉ユ簮淇℃伅
+        // 显示引用来源
         if (sources && sources.length > 0) {
             const sourcesDiv = document.createElement('div');
             sourcesDiv.className = 'message-sources';
             
-            // 妫€鏌ユ枃妗ｇ姸鎬侊紝status 涓?'deleted' 琛ㄧず鏂囨。宸茶鍒犻櫎
+            // 过滤掉status为'deleted'的文件
             const processedFiles = new Set();
             const displaySources = [];
             
@@ -521,12 +520,12 @@ class ChatApp {
                     const displayName = this.truncateFilename(s.file, 15);
                     const titleAttr = `title="${this.escapeHtml(s.file)}"`;
                     if (s.status === 'deleted') {
-                        return `<span class="source-tag deleted" ${titleAttr}>${displayName} (宸插垹闄?</span>`;
+                        return `<span class="source-tag deleted" ${titleAttr}>${displayName} (已删除)</span>`;
                     }
                     return `<span class="source-tag" ${titleAttr}>${displayName}</span>`;
                 }).join('');
                 
-                sourcesDiv.innerHTML = '<strong>寮曠敤鏉ユ簮锛?/strong>' + sourcesHtml;
+                sourcesDiv.innerHTML = '<strong>引用来源:</strong>' + sourcesHtml;
                 contentDiv.appendChild(sourcesDiv);
             }
         }
@@ -537,7 +536,7 @@ class ChatApp {
 
     async listDocuments() {
         try {
-            // 娣诲姞鏃堕棿鎴崇鐢ㄧ紦瀛?
+            // 添加时间戳防止缓存
             const response = await fetch('/rag/documents?' + Date.now());
             const data = await response.json();
             console.log('Received documents:', data);
@@ -545,7 +544,7 @@ class ChatApp {
             this.docsModalBody.innerHTML = '';
 
             if (!data.documents || data.documents.length === 0) {
-                this.docsModalBody.innerHTML = '<p style="text-align:center;color:#999;">鏆傛棤鏂囨。</p>';
+                this.docsModalBody.innerHTML = '<p style="text-align:center;color:#999;">暂无文档</p>';
                 this.docsModal.classList.add('show');
                 return;
             }
@@ -556,7 +555,7 @@ class ChatApp {
 
                 const titleDiv = document.createElement('div');
                 titleDiv.className = 'doc-title';
-                const originalName = doc.filename || doc.file || doc.question || '鏃犳爣棰?;
+                const originalName = doc.filename || doc.file || doc.question || '未知';
                 console.log('Document:', index, 'filename:', doc.filename, 'originalName:', originalName);
                 const displayName = this.truncateFilename(originalName, 25);
                 titleDiv.textContent = `${index + 1}. ${displayName}`;
@@ -565,26 +564,26 @@ class ChatApp {
                 const typeDiv = document.createElement('div');
                 typeDiv.className = 'doc-type';
                 if (doc.type === 'faq') {
-                    typeDiv.textContent = '绫诲瀷: 闂瓟';
+                    typeDiv.textContent = '类型: FAQ';
                 } else {
                     const fileType = doc.file_type ? doc.file_type.toUpperCase() : 'DOC';
                     const fileSize = this.formatFileSize(doc.file_size);
-                    typeDiv.textContent = `绫诲瀷: ${fileType} | 澶у皬: ${fileSize}`;
+                    typeDiv.textContent = `类型: ${fileType} | 大小: ${fileSize}`;
                 }
 
                 docItem.appendChild(titleDiv);
                 docItem.appendChild(typeDiv);
 
-                // 娣诲姞鍒犻櫎鎸夐挳锛團AQ 闆嗗悎涓嶅厑璁稿垹闄わ級
+                // 添加删除按钮,除了FAQ集合
                 if (doc.doc_id !== 'faq_collection') {
                     const deleteBtn = document.createElement('button');
                     deleteBtn.className = 'doc-delete-btn';
                     deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
-                    deleteBtn.title = '鍒犻櫎姝ゆ枃妗?;
+                    deleteBtn.title = '删除文档';
                     deleteBtn.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        const docName = doc.filename || doc.file || '姝ゆ枃妗?;
-                        if (confirm(`纭畾瑕佸垹闄ゆ枃妗?${docName}" 鍚楋紵`)) {
+                        const docName = doc.filename || doc.file || '文档';
+                        if (confirm(`确定要删除文档"${docName}"吗?`)) {
                             this.deleteDocument(doc.doc_id);
                         }
                     });
@@ -596,12 +595,12 @@ class ChatApp {
 
             this.docsModal.classList.add('show');
         } catch (error) {
-            alert(`鑾峰彇鏂囨。鍒楄〃澶辫触: ${error.message}`);
+            alert(`获取文档列表失败: ${error.message}`);
         }
     }
 
     async deleteDocument(docId) {
-        const confirmMsg = '纭畾瑕佸垹闄よ繖涓枃妗ｅ悧锛焅n娉ㄦ剰锛氬垹闄ゅ悗灏嗘棤娉曟仮澶嶏紝涓旂浉鍏冲悜閲忔暟鎹細浠庣煡璇嗗簱涓Щ闄ゃ€?;
+        const confirmMsg = '确定要删除这个文档吗?这将同时从向量数据库中删除相关的嵌入向量。此操作不可撤销。';
         if (!confirm(confirmMsg)) {
             return;
         }
@@ -611,7 +610,7 @@ class ChatApp {
 
         if (deleteBtn) {
             deleteBtn.disabled = true;
-            deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 鍒犻櫎涓?..';
+            deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 删除中...';
             deleteBtn.classList.add('doc-deleting');
         }
 
@@ -628,7 +627,7 @@ class ChatApp {
                     this.listDocuments();
                 }, 300);
             } else {
-                alert(`鍒犻櫎澶辫触: ${data.message}`);
+                alert(`删除失败: ${data.message}`);
                 if (deleteBtn) {
                     deleteBtn.disabled = false;
                     deleteBtn.innerHTML = originalText;
@@ -636,7 +635,7 @@ class ChatApp {
                 }
             }
         } catch (error) {
-            alert(`鍒犻櫎鏂囨。澶辫触: ${error.message}`);
+            alert(`删除文档失败: ${error.message}`);
             if (deleteBtn) {
                 deleteBtn.disabled = false;
                 deleteBtn.innerHTML = originalText;
@@ -647,7 +646,7 @@ class ChatApp {
 
     async uploadFile() {
         if (!this.selectedFile) {
-            alert('璇峰厛閫夋嫨鏂囦欢');
+            alert('请先选择文件');
             return;
         }
 
@@ -667,27 +666,27 @@ class ChatApp {
             const data = await response.json();
 
             if (data.success) {
-                alert(`涓婁紶鎴愬姛锛乗n鏂囦欢鍚? ${data.filename}\n鍒嗗潡鏁? ${data.chunks_count}`);
+                alert(`上传成功!\n文件名: ${data.filename}\n分块数: ${data.chunks_count}`);
                 this.uploadDocModal.classList.remove('show');
             } else {
-                alert(`涓婁紶澶辫触: ${data.message}`);
+                alert(`上传失败: ${data.message}`);
             }
         } catch (error) {
-            alert(`涓婁紶澶辫触: ${error.message}`);
+            alert(`上传失败: ${error.message}`);
         } finally {
             this.uploadProgress.style.display = 'none';
             this.uploadArea.style.display = 'flex';
             this.uploadArea.innerHTML = `
                 <i class="fas fa-cloud-upload-alt"></i>
-                <p>鐐瑰嚮鎴栨嫋鎷芥枃浠跺埌姝ゅ涓婁紶</p>
-                <p class="upload-hint">鏀寔 PDF銆乀XT銆丏OCX銆丮D 绛夋牸寮?/p>
-                <p class="upload-hint">鏈€澶ф枃浠跺ぇ灏忥細50MB</p>
+                <p>点击或拖拽文件到这里上传</p>
+                <p class="upload-hint">支持 PDF、TXT、DOCX、MD 等格式</p>
+                <p class="upload-hint">最大文件大小限制为 50MB</p>
             `;
             this.selectedFile = null;
-        this.lastQuestion = null;
-        this.authToken = localStorage.getItem('rag_token') || null;
-        this.currentUsername = localStorage.getItem('rag_username') || null;
-        this.initAuth();
+            this.lastQuestion = null;
+            this.authToken = localStorage.getItem('rag_token') || null;
+            this.currentUsername = localStorage.getItem('rag_username') || null;
+            this.initAuth();
         }
     }
 
@@ -696,7 +695,7 @@ class ChatApp {
         const answer = this.docAnswer.value.trim();
 
         if (!question || !answer) {
-            alert('璇峰～鍐欓棶棰樺拰绛旀');
+            alert('请填写问题和答案');
             return;
         }
 
@@ -710,15 +709,15 @@ class ChatApp {
             const data = await response.json();
 
             if (data.success) {
-                alert('鏂囨。娣诲姞鎴愬姛锛?);
+                alert('添加成功!');
                 this.addDocsModal.classList.remove('show');
                 this.docQuestion.value = '';
                 this.docAnswer.value = '';
             } else {
-                alert(`娣诲姞澶辫触: ${data.message}`);
+                alert(`添加失败: ${data.message}`);
             }
         } catch (error) {
-            alert(`娣诲姞鏂囨。澶辫触: ${error.message}`);
+            alert(`添加文档失败: ${error.message}`);
         }
     }
 
@@ -731,12 +730,12 @@ class ChatApp {
             const data = await response.json();
 
             if (data.success) {
-                alert('鎵€鏈夋枃妗ｅ凡娓呯┖锛?);
+                alert('所有文档已清空!');
             } else {
-                alert(`娓呯┖澶辫触: ${data.message}`);
+                alert(`清空失败: ${data.message}`);
             }
         } catch (error) {
-            alert(`娓呯┖鏂囨。澶辫触: ${error.message}`);
+            alert(`清空文档失败: ${error.message}`);
         }
     }
 
@@ -745,9 +744,9 @@ class ChatApp {
             const response = await fetch('/rag/documents/count');
             const data = await response.json();
 
-            alert(`鍚戦噺搴撲腑鍏辨湁 ${data.count} 涓枃妗);
+            alert(`当前知识库中有 ${data.count} 个文档`);
         } catch (error) {
-            alert(`鑾峰彇鏂囨。鏁伴噺澶辫触: ${error.message}`);
+            alert(`获取文档数失败: ${error.message}`);
         }
     }
 
@@ -766,12 +765,12 @@ class ChatApp {
                 this.chatMessages.style.display = 'none';
                 this.inputArea.style.display = 'none';
                 await this.loadConversations();
-                alert('浼氳瘽宸插垹闄わ紒');
+                alert('对话已删除');
             } else {
-                alert(`鍒犻櫎澶辫触: ${data.message}`);
+                alert(`删除失败: ${data.message}`);
             }
         } catch (error) {
-            alert(`鍒犻櫎浼氳瘽澶辫触: ${error.message}`);
+            alert(`删除对话失败: ${error.message}`);
         }
     }
 
@@ -779,12 +778,12 @@ class ChatApp {
         const title = this.newTitle.value.trim();
 
         if (!title) {
-            alert('璇疯緭鍏ユ柊鏍囬');
+            alert('请输入新标题');
             return;
         }
 
         if (!this.currentConversationId) {
-            alert('璇峰厛閫夋嫨涓€涓細璇?);
+            alert('请先选择一个对话');
             return;
         }
 
@@ -800,12 +799,12 @@ class ChatApp {
                 this.newTitle.value = '';
                 this.chatHeader.querySelector('h2').textContent = title;
                 await this.loadConversations();
-                alert('鏍囬鏇存柊鎴愬姛锛?);
+                alert('标题更新成功!');
             } else {
-                alert(`鏇存柊澶辫触: ${data.message}`);
+                alert(`更新失败: ${data.message}`);
             }
         } catch (error) {
-            alert(`鏇存柊鏍囬澶辫触: ${error.message}`);
+            alert(`更新标题失败: ${error.message}`);
         }
     }
 
@@ -826,7 +825,7 @@ class ChatApp {
             this.inputArea.style.display = 'none';
 
         } catch (error) {
-            console.error('娓呯┖浼氳瘽澶辫触:', error);
+            console.error('清空对话失败:', error);
         }
     }
 
@@ -913,18 +912,18 @@ class ChatApp {
             contentDiv.textContent = rawText;
         }
 
-        // 娣诲姞閲嶅啓鍚庣殑闂鍜孡LM Prompt涓婁笅鏂?
+        // 显示重写的问题和LLM Prompt
         if (rewrittenQuestion) {
             const rewriteDiv = document.createElement('div');
             rewriteDiv.className = 'message-rewrite';
-            rewriteDiv.innerHTML = `<strong>馃攧 閲嶅啓鍚庣殑闂锛?/strong><br><pre style="margin: 5px 0 0 0; white-space: pre-wrap; word-break: break-all;">${this.escapeHtml(rewrittenQuestion)}</pre>`;
+            rewriteDiv.innerHTML = `<strong>重写的问题</strong><br><pre style="margin: 5px 0 0 0; white-space: pre-wrap; word-break: break-all;">${this.escapeHtml(rewrittenQuestion)}</pre>`;
             contentDiv.appendChild(rewriteDiv);
         }
 
         if (finalPrompt) {
             const promptDiv = document.createElement('div');
             promptDiv.className = 'message-prompt';
-            promptDiv.innerHTML = `<strong>馃摑 LLM Prompt 涓婁笅鏂囷細</strong><br><pre style="margin: 5px 0 0 0; white-space: pre-wrap; word-break: break-all; max-height: 300px; overflow-y: auto;">${this.escapeHtml(finalPrompt)}</pre>`;
+            promptDiv.innerHTML = `<strong>发送给LLM的Prompt</strong><br><pre style="margin: 5px 0 0 0; white-space: pre-wrap; word-break: break-all; max-height: 300px; overflow-y: auto;">${this.escapeHtml(finalPrompt)}</pre>`;
             contentDiv.appendChild(promptDiv);
         }
 
@@ -1072,7 +1071,7 @@ class ChatApp {
         registerSubmit.addEventListener('click', () => this.handleRegister());
         skipLogin.addEventListener('click', () => this.skipLogin());
         if (logoutBtn) logoutBtn.addEventListener('click', () => this.handleLogout());
-        if (this.authToken) { this.onLoginSuccess(this.authToken, this.currentUsername || 'User'); }
+        if (this.authToken || localStorage.getItem('rag_token') === 'anonymous') { this.onLoginSuccess(this.authToken || 'anonymous', this.currentUsername || 'anonymous'); }
     }
 
     async handleLogin() {
@@ -1099,7 +1098,7 @@ class ChatApp {
         } catch (e) { document.getElementById('registerError').textContent = 'Network error: ' + e.message; }
     }
 
-    skipLogin() { this.onLoginSuccess(null, 'anonymous'); }
+    skipLogin() { localStorage.setItem('rag_token', 'anonymous'); this.onLoginSuccess('anonymous', 'anonymous'); }
 
     onLoginSuccess(token, username) {
         if (token) { this.authToken = token; localStorage.setItem('rag_token', token); }

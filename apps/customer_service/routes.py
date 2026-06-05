@@ -1,3 +1,4 @@
+
 from typing import List, Optional
 from pydantic import BaseModel, Field
 from fastapi import APIRouter, HTTPException, Query, Depends
@@ -9,7 +10,7 @@ from utils.auth import get_current_user, hash_password, verify_password, create_
 from infrastructure.database import db_manager
 from infrastructure.models import Message
 
-router = APIRouter(prefix="/api/v1", tags=["鏅鸿兘瀹㈡湇"])
+router = APIRouter(prefix="/api/v1", tags=["智能客服接口"])
 
 
 
@@ -26,44 +27,44 @@ class AuthResponse(BaseModel):
 
 
 class ChatRequest(BaseModel):
-    question: str = Field(..., description="鐢ㄦ埛闂")
-    conversation_id: Optional[str] = Field(None, description="浼氳瘽ID锛堝彲閫夛紝涓嶆彁渚涘垯鍒涘缓鏂颁細璇濓級")
-    sources: Optional[List[dict]] = Field(None, description="鐭ヨ瘑搴撴潵婧愪俊鎭?)
-    reply: Optional[str] = Field(None, description="鐩存帴淇濆瓨鐨勫洖澶嶏紙涓嶇粡杩?agent 鐢熸垚锛?)
+    question: str = Field(..., description="用户输入的问题")
+    conversation_id: Optional[str] = Field(None, description="对话ID，如果不提供则创建新对话")
+    sources: Optional[List[dict]] = Field(None, description="引用来源信息")
+    reply: Optional[str] = Field(None, description="预先生成的回答，不经过 agent 处理")
 
 
 class ChatResponse(BaseModel):
-    conversation_id: str = Field(..., description="浼氳瘽ID")
-    reply: str = Field(..., description="瀹㈡湇鍥炲")
-    thinking: Optional[str] = Field(None, description="鎬濊€冭繃绋?)
-    action: Optional[str] = Field(None, description="鎵ц鐨勫姩浣?)
-    title: Optional[str] = Field(None, description="浼氳瘽鏍囬")
-    rewritten_question: Optional[str] = Field(None, description="閲嶅啓鍚庣殑闂")
-    final_prompt: Optional[str] = Field(None, description="LLM瀹屾暣Prompt涓婁笅鏂?)
-    message_id: Optional[int] = Field(None, description="娑堟伅ID")
+    conversation_id: str = Field(..., description="对话ID")
+    reply: str = Field(..., description="AI回答")
+    thinking: Optional[str] = Field(None, description="思考过程")
+    action: Optional[str] = Field(None, description="执行的动作")
+    title: Optional[str] = Field(None, description="对话标题")
+    rewritten_question: Optional[str] = Field(None, description="重写优化后的问题")
+    final_prompt: Optional[str] = Field(None, description="LLM使用的prompt上下文")
+    message_id: Optional[int] = Field(None, description="消息ID")
 
 
 class ConversationListResponse(BaseModel):
-    conversations: List[dict] = Field(..., description="浼氳瘽鍒楄〃")
+    conversations: List[dict] = Field(..., description="对话列表")
 
 
 class ConversationDetailResponse(BaseModel):
-    conversation_id: str = Field(..., description="浼氳瘽ID")
-    title: str = Field(..., description="浼氳瘽鏍囬")
-    messages: List[dict] = Field(..., description="娑堟伅鍒楄〃")
+    conversation_id: str = Field(..., description="对话ID")
+    title: str = Field(..., description="对话标题")
+    messages: List[dict] = Field(..., description="消息列表")
 
 
-@router.post("/chat", response_model=ChatResponse, summary="涓庢櫤鑳藉鏈嶅璇?)
+@router.post("/chat", response_model=ChatResponse, summary="智能客服对话接口")
 async def chat(request: ChatRequest, user_id: str = Depends(get_current_user)):
     """
-    涓庢櫤鑳藉鏈嶅璇?
+    智能客服对话接口
 
-    鍙傛暟锛?
-        question: 鐢ㄦ埛闂
-        conversation_id: 浼氳瘽ID锛堝彲閫夛紝涓嶆彁渚涘垯鍒涘缓鏂颁細璇濓級
+    参数:
+        question: 用户输入的问题
+        conversation_id: 对话ID，如果不提供则创建新对话
 
-    杩斿洖锛?
-        瀹㈡湇鍥炲
+    返回:
+        AI回答
     """
     try:
         conversation_id = request.conversation_id
@@ -71,7 +72,7 @@ async def chat(request: ChatRequest, user_id: str = Depends(get_current_user)):
         if conversation_id:
             conversation = conversation_manager.get_conversation(conversation_id)
             if not conversation:
-                raise HTTPException(status_code=404, detail="浼氳瘽涓嶅瓨鍦?)
+                raise HTTPException(status_code=404, detail="对话不存在")
             history = conversation.get_messages_for_llm()
         else:
             conversation = conversation_manager.create_conversation(user_id=user_id)
@@ -130,9 +131,9 @@ async def chat(request: ChatRequest, user_id: str = Depends(get_current_user)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/conversations", response_model=ConversationListResponse, summary="鍒楀嚭鎵€鏈変細璇?)
-async def list_conversations(limit: int = Query(20, description="杩斿洖鏁伴噺闄愬埗"), user_id: str = Depends(get_current_user)):
-    """鍒楀嚭鎵€鏈変細璇?""
+@router.get("/conversations", response_model=ConversationListResponse, summary="获取对话列表")
+async def list_conversations(limit: int = Query(20, description="返回对话数量上限"), user_id: str = Depends(get_current_user)):
+    """获取对话列表"""
     try:
         conversations = conversation_manager.list_conversations(user_id=user_id, limit=limit)
         return ConversationListResponse(
@@ -142,13 +143,13 @@ async def list_conversations(limit: int = Query(20, description="杩斿洖鏁伴
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/conversations/{conversation_id}", response_model=ConversationDetailResponse, summary="鑾峰彇浼氳瘽璇︽儏")
+@router.get("/conversations/{conversation_id}", response_model=ConversationDetailResponse, summary="获取对话详情")
 async def get_conversation(conversation_id: str):
-    """鑾峰彇浼氳瘽璇︽儏"""
+    """获取对话详情"""
     try:
         conversation = conversation_manager.get_conversation(conversation_id)
         if not conversation:
-            raise HTTPException(status_code=404, detail="浼氳瘽涓嶅瓨鍦?)
+            raise HTTPException(status_code=404, detail="对话不存在")
 
         return ConversationDetailResponse(
             conversation_id=conversation.conversation_id,
@@ -161,34 +162,35 @@ async def get_conversation(conversation_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/conversations/{conversation_id}", summary="鍒犻櫎浼氳瘽")
+@router.delete("/conversations/{conversation_id}", summary="删除对话")
 async def delete_conversation(conversation_id: str):
-    """鍒犻櫎浼氳瘽"""
+    """删除对话"""
     try:
         success = conversation_manager.delete_conversation(conversation_id)
         if not success:
-            raise HTTPException(status_code=404, detail="浼氳瘽涓嶅瓨鍦?)
-        return {"success": True, "message": "浼氳瘽宸插垹闄?}
+            raise HTTPException(status_code=404, detail="对话不存在")
+        return {"success": True, "message": "对话已删除"}
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/conversations/{conversation_id}/title", summary="鏇存柊浼氳瘽鏍囬")
-async def update_conversation_title(conversation_id: str, title: str = Query(..., description="鏂版爣棰?)):
-    """鏇存柊浼氳瘽鏍囬"""
+@router.put("/conversations/{conversation_id}/title", summary="更新对话标题")
+async def update_conversation_title(conversation_id: str, title: str = Query(..., description="新标题")):
+    """更新对话标题"""
     try:
         success = conversation_manager.update_conversation_title(conversation_id, title)
         if not success:
-            raise HTTPException(status_code=404, detail="浼氳瘽涓嶅瓨鍦?)
-        return {"success": True, "message": "鏍囬宸叉洿鏂?, "title": title}
+            raise HTTPException(status_code=404, detail="对话不存在")
+        return {"success": True, "message": "标题已更新", "title": title}
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/chat/stream", summary="涓庢櫤鑳藉鏈嶅璇濓紙娴佸紡锛?)
+
+@router.post("/chat/stream", summary="智能客服对话流式接口")
 async def chat_stream(request: ChatRequest, user_id: str = Depends(get_current_user)):
     """Streaming SSE chat endpoint."""
     try:
@@ -197,7 +199,7 @@ async def chat_stream(request: ChatRequest, user_id: str = Depends(get_current_u
         if conversation_id:
             conversation = conversation_manager.get_conversation(conversation_id)
             if not conversation:
-                raise HTTPException(status_code=404, detail="浼氳瘽涓嶅瓨鍦?)
+                raise HTTPException(status_code=404, detail="对话不存在")
             history = conversation.get_messages_for_llm()
         else:
             conversation = conversation_manager.create_conversation(user_id=user_id)
@@ -247,6 +249,8 @@ async def chat_stream(request: ChatRequest, user_id: str = Depends(get_current_u
                     }
                     if event_data.get("rewritten_question"):
                         done_data["rewritten_question"] = event_data["rewritten_question"]
+                    if event_data.get("final_prompt"):
+                        done_data["final_prompt"] = event_data["final_prompt"]
 
                     yield f"event: done\ndata: {_json.dumps(done_data, ensure_ascii=False)}\n\n"
                     break
@@ -268,19 +272,19 @@ async def chat_stream(request: ChatRequest, user_id: str = Depends(get_current_u
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/messages/{conversation_id}/feedback", summary="鎻愪氦娑堟伅鍙嶉锛堢偣璧?鐐硅俯锛?)
-async def submit_feedback(conversation_id: str, message_id: int = Query(..., description="娑堟伅ID"), rating: str = Query(..., description="like 鎴?dislike")):
+@router.post("/messages/{conversation_id}/feedback", summary="提交消息反馈")
+async def submit_feedback(conversation_id: str, message_id: int = Query(..., description="消息ID"), rating: str = Query(..., description="like or dislike")):
     """Submit feedback for a specific message."""
     if rating not in ("like", "dislike"):
         raise HTTPException(status_code=400, detail="rating must be 'like' or 'dislike'")
     try:
         db_manager.add_feedback(conversation_id, message_id, rating)
-        return {"success": True, "message": "鍙嶉宸叉彁浜?}
+        return {"success": True, "message": "反馈已提交"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/messages/{conversation_id}/feedback", summary="鑾峰彇浼氳瘽鍙嶉")
+@router.get("/messages/{conversation_id}/feedback", summary="获取对话反馈")
 async def get_feedback(conversation_id: str):
     """Get feedback records for a conversation."""
     try:
@@ -288,6 +292,7 @@ async def get_feedback(conversation_id: str):
         return {"conversation_id": conversation_id, "feedback": [dict(r) for r in records]}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 # ===== Authentication Endpoints =====
 

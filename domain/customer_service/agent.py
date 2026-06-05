@@ -117,14 +117,14 @@ Answer requirements:
         raw_reply = chat_service.chat_completion([{"role": "user", "content": final_prompt}])
         raw_reply = raw_reply.strip() if raw_reply else "No answer could be generated."
 
-        # Parse the LLM structured output: ### 鎬濊€?/ ### 琛屽姩 / ### 鍥炲
+        # Parse the LLM structured output: ### thinking / ### action / ### reply
         import re as _re
         sections = {"reply": "", "thinking": "", "action": ""}
         current_section = None
         for line in raw_reply.splitlines():
-            m = _re.match(r"^###\s*(鎬濊€億琛屽姩|鍥炲)", line)
+            m = _re.match(r"^###\s*(thinking|action|reply)", line)
             if m:
-                current_section = {"鎬濊€?: "thinking", "琛屽姩": "action", "鍥炲": "reply"}[m.group(1)]
+                current_section = {"thinking": "thinking", "action": "action", "reply": "reply"}[m.group(1)]
                 continue
             if current_section:
                 sections[current_section] += line + "\n"

@@ -92,7 +92,7 @@ project/
 ### 4. 文档管理
 
 - 支持 PDF、DOCX、TXT、Markdown 等格式上传
-- 基于 `unstructured` 库的智能文档解析，若无法unstructured则自动切换Fallback模式（PyPDF2/python-docx）
+- 基于 `unstructured` 库的智能文档解析
 - 文档的增、删、查、状态追踪 API
 
 ### 5. 前端交互
@@ -137,8 +137,7 @@ python main.py
 
 服务启动后：
 
-- 前端页面：[http://localhost:8080](http://localhost:8080)
-- Swagger 文档：[http://localhost:8080/docs](http://localhost:8080/docs)
+- 前端页面：[http://127.0.0.1:8080/static/index.html](http://127.0.0.1:8080/static/index.html)
 
 ### 快速体验
 

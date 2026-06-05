@@ -16,7 +16,7 @@ body {
     height: 100vh;
 }
 
-/* 宸︿晶杈规爮 - 鍔熻兘鍖?*/
+/* 瀹革缚鏅舵潏瑙勭埉 - 閸旂喕鍏橀崠?*/
 .sidebar {
     width: 280px;
     background-color: #ffffff;
@@ -26,7 +26,7 @@ body {
     overflow-y: auto;
 }
 
-/* 椤堕儴鎸夐挳鍖?*/
+/* 妞ゅ爼鍎撮幐澶愭尦閸?*/
 .sidebar-header {
     padding: 12px;
     border-bottom: 1px solid #e0e0e0;
@@ -56,7 +56,7 @@ body {
     display: block;
 }
 
-/* 鎼滅储鏂瑰紡涓嬫媺鑿滃崟 */
+/* 閹兼粎鍌ㄩ弬鐟扮础娑撳濯洪懣婊冨礋 */
 .search-modes {
     display: none;
     margin-top: 8px;
@@ -86,14 +86,14 @@ body {
     color: #007bff;
 }
 
-/* 鍒嗛殧绾?*/
+/* 閸掑棝娈х痪?*/
 .sidebar-divider {
     border: none;
     border-top: 1px solid #e0e0e0;
     margin: 8px 12px;
 }
 
-/* 渚ц竟鏍忓尯鍩?*/
+/* 娓氀嗙珶閺嶅繐灏崺?*/
 .sidebar-section {
     padding: 0 12px;
 }
@@ -143,7 +143,7 @@ body {
     width: 16px;
 }
 
-/* 鍘嗗彶瀵硅瘽鍒楄〃 */
+/* 閸樺棗褰剁€电鐦介崚妤勩€?*/
 .conversations-list {
     max-height: 250px;
     overflow-y: auto;
@@ -183,7 +183,7 @@ body {
     margin-top: 4px;
 }
 
-/* 鍙充晶涓诲尯鍩?- 瀵硅瘽鍖?*/
+/* 閸欏厖鏅舵稉璇插隘閸?- 鐎电鐦介崠?*/
 .main-content {
     flex: 1;
     display: flex;
@@ -192,7 +192,7 @@ body {
     min-width: 0;
 }
 
-/* 椤堕儴鏍囬鏍?*/
+/* 妞ゅ爼鍎撮弽鍥暯閺?*/
 .chat-header {
     padding: 16px 24px;
     background-color: white;
@@ -248,7 +248,7 @@ body {
     color: #dc3545;
 }
 
-/* 娆㈣繋椤甸潰 */
+/* 濞嗐垼绻嬫い鐢告桨 */
 .welcome-screen {
     flex: 1;
     display: flex;
@@ -303,7 +303,7 @@ body {
     color: #007bff;
 }
 
-/* 瀵硅瘽鍐呭鍖哄煙 */
+/* 鐎电鐦介崘鍛啇閸栧搫鐓?*/
 .chat-messages {
     flex: 1;
     overflow-y: auto;
@@ -350,7 +350,7 @@ body {
     word-break: break-word;
 }
 
-/* 鍔犺浇鍔ㄧ敾 */
+/* 閸旂姾娴囬崝銊ф暰 */
 .loading-spinner {
     display: inline-block;
     width: 16px;
@@ -426,7 +426,7 @@ body {
     margin-top: 4px;
 }
 
-/* 杈撳叆鍖哄煙 */
+/* 鏉堟挸鍙嗛崠鍝勭厵 */
 .input-area {
     padding: 16px 24px;
     background-color: white;
@@ -478,7 +478,7 @@ body {
     cursor: not-allowed;
 }
 
-/* 寮圭獥鏍峰紡 */
+/* 瀵湱鐛ラ弽宄扮础 */
 .modal {
     display: none;
     position: fixed;
@@ -585,7 +585,7 @@ body {
     background-color: #0056b3;
 }
 
-/* 鏂囨。鍒楄〃椤?*/
+/* 閺傚洦銆傞崚妤勩€冩い?*/
 .doc-item {
     padding: 12px;
     border-radius: 8px;
@@ -661,7 +661,7 @@ body {
     cursor: not-allowed;
 }
 
-/* 鏂囨。涓婁紶鍖哄煙 */
+/* 閺傚洦銆傛稉濠佺炊閸栧搫鐓?*/
 .upload-area {
     border: 2px dashed #d0d0d0;
     border-radius: 12px;
@@ -701,7 +701,7 @@ body {
     color: #999 !important;
 }
 
-/* 涓婁紶杩涘害 */
+/* 娑撳﹣绱舵潻娑樺 */
 .upload-progress {
     padding: 20px;
     text-align: center;
@@ -736,7 +736,7 @@ body {
     color: #666;
 }
 
-/* 鏉ユ簮鏍囩 */
+/* 閺夈儲绨弽鍥╊劮 */
 .message-sources {
     margin-top: 10px;
     padding-top: 10px;
@@ -776,7 +776,7 @@ body {
     text-decoration: line-through;
 }
 
-/* 婊氬姩鏉℃牱寮?*/
+/* 濠婃艾濮╅弶鈩冪壉瀵?*/
 ::-webkit-scrollbar {
     width: 6px;
 }
@@ -794,7 +794,7 @@ body {
     background: #a1a1a1;
 }
 
-/* 鍝嶅簲寮忚璁?*/
+/* 閸濆秴绨插蹇氼啎鐠?*/
 @media (max-width: 768px) {
     .sidebar {
         width: 100%;

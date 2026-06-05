@@ -1,8 +1,8 @@
 
 """
-Small-to-Big鍒嗗潡妯″潡
-鏅鸿兘閫掑綊鍒嗗潡 + 婊戠獥閲嶅彔鍒嗗潡
-瀹炵幇鍙屽眰鍒嗗潡绛栫暐锛氬皬鍧楃敤浜庢绱紝澶у潡鐢ㄤ簬鐢熸垚
+Small-to-Big分块模块
+智能递归分块 + 滑窗重叠分块
+使用语义边界优先，滑窗保证内容完整
 """
 import os
 import uuid
@@ -12,7 +12,7 @@ import tiktoken
 from dotenv import load_dotenv
 load_dotenv()
 
-# 鍒嗗潡閰嶇疆
+# 分块参数
 SMALL_CHUNK_MIN_TOKENS = int(os.getenv("SMALL_CHUNK_MIN_TOKENS", "200"))
 SMALL_CHUNK_MAX_TOKENS = int(os.getenv("SMALL_CHUNK_MAX_TOKENS", "300"))
 BIG_CHUNK_MIN_TOKENS = int(os.getenv("BIG_CHUNK_MIN_TOKENS", "1500"))
@@ -21,7 +21,7 @@ CHUNK_OVERLAP_RATIO = float(os.getenv("CHUNK_OVERLAP_RATIO", "0.15"))
 
 
 class SmallBigChunker:
-    """Small-to-Big鍙屽眰鍒嗗潡鍣?""
+    """Small-to-Big分块器"""
 
     def __init__(self):
         try:
@@ -30,10 +30,11 @@ class SmallBigChunker:
             self.tokenizer = None
 
     def count_tokens(self, text: str) -> int:
-        """璁＄畻Token鏁?""
+        """计算token数"""
         if self.tokenizer:
             return len(self.tokenizer.encode(text))
-        # 绠€鍗曞洖閫€锛氭寜瀛楃鏁颁及绠?        return int(len(text) / 4)
+        # fallback: 粗略估算
+        return int(len(text) / 4)
 
     def chunk_document(
         self,
@@ -41,21 +42,23 @@ class SmallBigChunker:
         doc_id: str = None
     ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
         """
-        鎵цSmall-to-Big鍒嗗潡
-        杩斿洖: (small_chunks, big_chunks)
-        
-        澶у潡锛?500-2000 tokens锛屼綔涓虹敓鎴愪笂涓嬫枃鍗曞厓
-        灏忓潡锛?00-300 tokens锛屼綔涓烘绱㈠崟鍏?        """
-        # 1. 鍏堝悎骞舵墍鏈夊厓绱犱负瀹屾暣鏂囨湰锛屽苟淇濈暀鏂囨。绾у厓鏁版嵁
+        执行Small-to-Big分块
+        返回 (small_chunks, big_chunks)
+
+        大块用于完整上下文，500-2000 tokens
+        小块用于检索，200-300 tokens
+        """
+        # 1. 合并所有元素为完整文档文本
         full_text = "\n\n".join([elem["text"] for elem in elements])
         
-        # 鑾峰彇鏂囨。绾у厓鏁版嵁锛堜粠绗竴涓厓绱犺幏鍙栵級
+        # 获取文档级元数据
         doc_metadata = elements[0]["metadata"] if elements else {}
 
-        # 2. 鐢熸垚澶у潡
+        # 2. 构建大块
         big_chunks = self._build_big_chunks(full_text, doc_id, doc_metadata)
 
-        # 3. 瀵规瘡涓ぇ鍧楃敓鎴愬皬鍧?        small_chunks = []
+        # 3. 基于每个大块构建小块
+        small_chunks = []
         for big_chunk in big_chunks:
             big_small_chunks = self._build_small_chunks(big_chunk)
             small_chunks.extend(big_small_chunks)
@@ -68,7 +71,7 @@ class SmallBigChunker:
         doc_id: str,
         doc_metadata: Dict[str, Any]
     ) -> List[Dict[str, Any]]:
-        """鏋勫缓澶у潡锛?500-2000 tokens锛?""
+        """构建大块，500-2000 tokens"""
         chunks = []
         paragraphs = text.split("\n\n")
 
@@ -78,7 +81,7 @@ class SmallBigChunker:
         for para in paragraphs:
             para_tokens = self.count_tokens(para)
 
-            # 濡傛灉娣诲姞褰撳墠娈佃惤浼氳秴杩囦笂闄愶紝鍏堜繚瀛樺綋鍓峜hunk
+            # 如果加上这个段落超过最大大小且当前已有足够内容，保存当前chunk
             if current_tokens + para_tokens > BIG_CHUNK_MAX_TOKENS and current_tokens >= BIG_CHUNK_MIN_TOKENS:
                 big_chunk_id = str(uuid.uuid4())
                 chunks.append({
@@ -110,8 +113,9 @@ class SmallBigChunker:
 
     def _build_small_chunks(self, big_chunk: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
-        瀵瑰崟涓ぇ鍧楄繘琛屽皬鍧楀垏鍒?        浣跨敤鏅鸿兘閫掑綊鍒嗗潡 + 婊戠獥閲嶅彔
-        姣忎釜灏忓潡 200-300 tokens
+        基于大块构建小块
+        智能递归分块 + 滑窗合并
+        保证每个小块 200-300 tokens
         """
         small_chunks = []
         text = big_chunk["text"]
@@ -119,12 +123,14 @@ class SmallBigChunker:
         doc_id = big_chunk["doc_id"]
         doc_metadata = big_chunk.get("metadata", {})
 
-        # 1. 鍏堟寜璇箟杈圭晫閫掑綊鍒嗗潡
+        # 1. 智能递归语义分块
         semantic_chunks = self._smart_recursive_split(text)
 
-        # 2. 鍐嶅簲鐢ㄦ粦绐楅噸鍙犱繚璇佷笂涓嬫枃杩炵画鎬?        final_small_chunks = self._sliding_window_merge(semantic_chunks)
+        # 2. 滑窗合并，保证每个块在目标大小范围内
+        final_small_chunks = self._sliding_window_merge(semantic_chunks)
 
-        # 3. 濉厖鍏冩暟鎹?        for idx, chunk_text in enumerate(final_small_chunks):
+        # 3. 添加元数据
+        for idx, chunk_text in enumerate(final_small_chunks):
             small_chunks.append({
                 "small_chunk_id": str(uuid.uuid4()),
                 "big_chunk_id": big_chunk_id,
@@ -147,8 +153,8 @@ class SmallBigChunker:
 
     def _smart_recursive_split(self, text: str) -> List[str]:
         """
-        鏅鸿兘閫掑綊鍒嗗潡锛氭寜璇箟杈圭晫浼樺厛鍒囧垎
-        鍒囧垎椤哄簭锛氬弻鎹㈣ 鈫?鍗曟崲琛?鈫?鍙ュ彿 鈫?閫楀彿
+        智能递归语义分块
+        按优先级尝试分隔符：段落、换行、句子、字符
         """
         chunks = []
         tokens = self.count_tokens(text)
@@ -156,8 +162,8 @@ class SmallBigChunker:
         if tokens <= SMALL_CHUNK_MAX_TOKENS:
             return [text]
 
-        # 灏濊瘯鎸変紭鍏堢骇鍒嗗壊
-        separators = ["\n\n", "\n", "銆?, "锛?, "锛?, ".", "!", "?", "锛?, ","]
+        # 尝试不同分隔符
+        separators = ["\n\n", "\n", ". ", "! ", "? ", ",", "。", "！", "？", "，"]
 
         for sep in separators:
             parts = text.split(sep)
@@ -175,7 +181,8 @@ class SmallBigChunker:
                             current_chunk = part
                             current_tokens = self.count_tokens(part)
                         else:
-                            # 濡傛灉褰撳墠chunk澶皬锛岀洿鎺ユ坊鍔?                            current_chunk += (sep + part if current_chunk else part)
+                            # 如果这个chunk还很小，继续合并
+                            current_chunk += (sep + part if current_chunk else part)
                             current_tokens += part_tokens
                     else:
                         current_chunk += (sep + part if current_chunk else part)
@@ -184,15 +191,15 @@ class SmallBigChunker:
                 if current_chunk:
                     chunks.append(current_chunk.strip())
 
-                # 楠岃瘉鍒囧垎缁撴灉
+                # 检查是否所有块都在大小限制内
                 if all(self.count_tokens(c) <= SMALL_CHUNK_MAX_TOKENS for c in chunks):
                     return chunks
 
-        # 鍏滃簳锛氱洿鎺ユ寜token鏁伴噺鍒囧垎
+        # fallback: 强制按token切分
         return self._hard_token_split(text)
 
     def _hard_token_split(self, text: str) -> List[str]:
-        """寮哄埗鎸塼oken鏁伴噺鍒囧垎锛堝厹搴曟柟妗堬級"""
+        """强制按token切分，作为最后手段"""
         chunks = []
         
         if self.tokenizer:
@@ -202,7 +209,8 @@ class SmallBigChunker:
                 chunk_text = self.tokenizer.decode(chunk_tokens)
                 chunks.append(chunk_text)
         else:
-            # 绠€鍗曞洖閫€锛氭寜瀛楃鏁板垏鍒?            chunk_size = SMALL_CHUNK_MAX_TOKENS * 4
+            # fallback: 按字符估算切分
+            chunk_size = SMALL_CHUNK_MAX_TOKENS * 4
             for i in range(0, len(text), chunk_size):
                 chunks.append(text[i:i + chunk_size])
 
@@ -210,9 +218,9 @@ class SmallBigChunker:
 
     def _sliding_window_merge(self, chunks: List[str]) -> List[str]:
         """
-        婊戠獥閲嶅彔鍒嗗潡
-        鍚堝苟杩囧皬鐨刢hunk锛屼繚璇佹瘡涓猚hunk 200-300 tokens
-        娣诲姞10%-20%閲嶅彔
+        滑窗重叠分块
+        合并过短的小chunk，保证每个chunk 200-300 tokens
+        保留10%-20%的重叠
         """
         result = []
 
@@ -221,7 +229,8 @@ class SmallBigChunker:
             current = chunks[i]
             current_tokens = self.count_tokens(current)
 
-            # 鍚戝悗鍚堝苟锛岀洿鍒拌揪鍒扮洰鏍囧ぇ灏?            j = i + 1
+            # 尝试合并下一个chunk直到达到最小大小或超过最大大小
+            j = i + 1
             while j < len(chunks) and current_tokens < SMALL_CHUNK_MIN_TOKENS:
                 merged = current + "\n\n" + chunks[j]
                 merged_tokens = self.count_tokens(merged)
@@ -241,4 +250,3 @@ class SmallBigChunker:
 small_big_chunker = SmallBigChunker()
 
 __all__ = ["SmallBigChunker", "small_big_chunker"]
-

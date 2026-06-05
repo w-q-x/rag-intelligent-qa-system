@@ -5,14 +5,14 @@ from infrastructure.models import Message, Conversation
 
 
 class ConversationManager:
-    """浼氳瘽绠＄悊鍣?""
+    """对话管理器"""
 
     def __init__(self):
         self.db = db_manager
 
     def create_conversation(self, user_id: Optional[str] = None, title: Optional[str] = None) -> Conversation:
         user_id = user_id or "anonymous"
-        """鍒涘缓鏂颁細璇?""
+        """创建新对话"""
         conversation_id = str(uuid.uuid4())
         conversation = Conversation(
             conversation_id=conversation_id,
@@ -20,7 +20,7 @@ class ConversationManager:
             title=title
         )
 
-        # 淇濆瓨鍒版暟鎹簱
+        # 保存对话到数据库
         self.db.execute(
             '''INSERT INTO conversations (conversation_id, user_id, title)
                VALUES (?, ?, ?)''',
@@ -30,7 +30,7 @@ class ConversationManager:
         return conversation
 
     def get_conversation(self, conversation_id: str) -> Optional[Conversation]:
-        """鑾峰彇浼氳瘽"""
+        """获取对话"""
         row = self.db.fetch_one(
             '''SELECT * FROM conversations WHERE conversation_id = ?''',
             (conversation_id,)
@@ -41,7 +41,7 @@ class ConversationManager:
 
         conversation = Conversation.from_dict(dict(row))
 
-        # 鑾峰彇娑堟伅
+        # 获取消息
         messages = self.db.fetch_all(
             '''SELECT * FROM messages WHERE conversation_id = ? ORDER BY turn_number''',
             (conversation_id,)
@@ -59,12 +59,12 @@ class ConversationManager:
         return conversation
 
     def add_message(self, conversation_id: str, role: str, content: str, metadata: Optional[Dict[str, Any]] = None) -> bool:
-        """娣诲姞娑堟伅鍒颁細璇?""
+        """添加消息到对话"""
         conversation = self.get_conversation(conversation_id)
         if not conversation:
             return False
 
-        # 鑾峰彇涓嬩竴涓?turn_number
+        # 获取下一个 turn_number
         messages = self.db.fetch_all(
             '''SELECT turn_number FROM messages WHERE conversation_id = ? ORDER BY turn_number DESC LIMIT 1''',
             (conversation_id,)
@@ -74,7 +74,7 @@ class ConversationManager:
         if messages:
             turn_number = messages[0]["turn_number"] + 1
 
-        # 淇濆瓨娑堟伅鍒版暟鎹簱
+        # 保存消息到数据库
         cursor = self.db.execute(
             '''INSERT INTO messages (conversation_id, role, content, turn_number, metadata)
                VALUES (?, ?, ?, ?, ?)''',
@@ -85,7 +85,7 @@ class ConversationManager:
 
     def list_conversations(self, user_id: Optional[str] = None, limit: int = 20) -> List[Conversation]:
         user_id = user_id or "anonymous"
-        """鍒楀嚭浼氳瘽鍒楄〃"""
+        """获取对话列表"""
         if user_id:
             rows = self.db.fetch_all(
                 '''SELECT * FROM conversations WHERE user_id = ? ORDER BY updated_at DESC LIMIT ?''',
@@ -105,14 +105,14 @@ class ConversationManager:
         return conversations
 
     def delete_conversation(self, conversation_id: str) -> bool:
-        """鍒犻櫎浼氳瘽"""
-        # 鍒犻櫎娑堟伅
+        """删除对话"""
+        # 删除消息
         self.db.execute(
             '''DELETE FROM messages WHERE conversation_id = ?''',
             (conversation_id,)
         )
 
-        # 鍒犻櫎浼氳瘽
+        # 删除对话
         cursor = self.db.execute(
             '''DELETE FROM conversations WHERE conversation_id = ?''',
             (conversation_id,)
@@ -121,7 +121,7 @@ class ConversationManager:
         return cursor.rowcount > 0
 
     def update_conversation_title(self, conversation_id: str, title: str) -> bool:
-        """鏇存柊浼氳瘽鏍囬"""
+        """更新对话标题"""
         cursor = self.db.execute(
             '''UPDATE conversations SET title = ?, updated_at = CURRENT_TIMESTAMP WHERE conversation_id = ?''',
             (title, conversation_id)
@@ -129,7 +129,7 @@ class ConversationManager:
         return cursor.rowcount > 0
 
     def get_conversation_title(self, conversation_id: str) -> Optional[str]:
-        """鑾峰彇浼氳瘽鏍囬"""
+        """获取对话标题"""
         row = self.db.fetch_one(
             '''SELECT title FROM conversations WHERE conversation_id = ?''',
             (conversation_id,)
@@ -139,7 +139,7 @@ class ConversationManager:
         return None
 
 
-# 鍒涘缓鍗曚緥
+# 创建实例
 conversation_manager = ConversationManager()
 
 __all__ = ["ConversationManager", "conversation_manager"]

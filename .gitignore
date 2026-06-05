@@ -50,3 +50,6 @@ htmlcov/
 CACHEDIR.TAG
 .agents/
 .codex/
+
+# GitHub API push script (contains token)
+push_via_api.ps1

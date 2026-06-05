@@ -1,9 +1,9 @@
 
 """
-鏂囨。瑙ｆ瀽妯″潡
-浣跨敤unstructured搴撹В鏋愬绫婚潪缁撴瀯鍖栨枃妗?
-鏀寔PDF銆乄ord銆丠TML銆乀XT绛夋牸寮?
-鏀寔OCR璇嗗埆锛堥渶瑕佸畨瑁呯浉鍏充緷璧栵級
+文档解析模块
+使用 unstructured 库解析多类型文档，
+支持 PDF、Word、HTML、TXT 等格式，
+支持 OCR 和元素类型识别
 """
 import os
 import uuid
@@ -34,7 +34,7 @@ except ImportError:
 
 
 class DocumentParser:
-    """鏂囨。瑙ｆ瀽鍣?- 鏀寔缁撴瀯鍖栬В鏋愪笌鍏冩暟鎹彁鍙?""
+    """文档解析器 - 支持多种文档格式的结构化解析"""
 
     def __init__(self, use_unstructured: bool = False):
         self.use_unstructured = use_unstructured and UNSTRUCTURED_AVAILABLE
@@ -46,8 +46,8 @@ class DocumentParser:
         file_size: int
     ) -> List[Dict[str, Any]]:
         """
-        瑙ｆ瀽鏂囨。锛岃繑鍥炴爣鍑嗗寲缁撴瀯鍖栨暟鎹?
-        鏍煎紡: [ { "element_type": "title", "text": "...", "metadata": {...} }, ... ]
+        解析文档，返回结构化元素
+        格式: [ { "element_type": "title", "text": "...", "metadata": {...} }, ... ]
         """
         file_ext = os.path.splitext(original_filename)[1].lower()
 
@@ -76,7 +76,7 @@ class DocumentParser:
         file_ext: str,
         base_metadata: Dict
     ) -> List[Dict[str, Any]]:
-        """浣跨敤unstructured瑙ｆ瀽锛堝寮虹増锛?""
+        """使用 unstructured 库解析文档"""
         elements = []
 
         if file_ext == '.pdf':
@@ -118,7 +118,7 @@ class DocumentParser:
         file_ext: str,
         base_metadata: Dict
     ) -> List[Dict[str, Any]]:
-        """fallback瑙ｆ瀽鏂规硶锛堝吋瀹圭幇鏈変唬鐮侊級"""
+        """fallback 解析 - 使用简单的文本提取"""
         result = []
 
         if file_ext == '.pdf':
@@ -228,7 +228,7 @@ class DocumentParser:
             return self._parse_txt_fallback(file_path, base_metadata)
 
     def _get_element_type(self, elem: Any) -> str:
-        """鑾峰彇鍏冪礌绫诲瀷"""
+        """获取元素类型"""
         if isinstance(elem, Title):
             return "title"
         elif isinstance(elem, Table):

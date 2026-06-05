@@ -3,7 +3,7 @@ from datetime import datetime
 
 
 class Message:
-    """娑堟伅妯″瀷"""
+    """消息模型"""
     
     def __init__(self, role: str, content: str, turn_number: Optional[int] = None, metadata: Optional[Dict[str, Any]] = None):
         self.role = role
@@ -35,7 +35,7 @@ class Message:
 
 
 class Conversation:
-    """浼氳瘽妯″瀷"""
+    """对话模型"""
     
     def __init__(
         self,
@@ -47,14 +47,14 @@ class Conversation:
     ):
         self.conversation_id = conversation_id
         self.user_id = user_id
-        self.title = title or "鏂颁細璇?
+        self.title = title or "新对话"
         self.messages = messages or []
         self.status = status
         self.created_at = datetime.now()
         self.updated_at = datetime.now()
     
     def add_message(self, message: Message):
-        """娣诲姞娑堟伅"""
+        """添加消息"""
         if not self.messages:
             message.turn_number = 1
         else:
@@ -64,7 +64,7 @@ class Conversation:
         self.updated_at = datetime.now()
     
     def get_messages_for_llm(self) -> List[Dict[str, str]]:
-        """鑾峰彇鐢ㄤ簬 LLM 鐨勬秷鎭牸寮?""
+        """获取适合 LLM 的消息列表"""
         return [{"role": m.role, "content": m.content} for m in self.messages]
     
     def to_dict(self) -> Dict[str, Any]:
@@ -86,8 +86,6 @@ class Conversation:
             title=data.get("title"),
             status=data.get("status", "active")
         )
-
-
 
 
 class User:
